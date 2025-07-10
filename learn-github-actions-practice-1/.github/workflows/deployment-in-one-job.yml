@@ -1,0 +1,22 @@
+name: Lint, Test, Build & Deploy in One Job
+on: [push, workflow_dispatch]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: Install nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install depedencies
+        run: npm ci
+      - name: Run lint
+        run: npm run lint
+      - name: Run test
+        run: npm run test
+      - name: Run build
+        run: npm run build
+      - name: Deploy code
+        run: echo "Deploying to server..."

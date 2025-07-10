@@ -1,0 +1,72 @@
+name: Deploy website
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint code
+        run: npm run lint
+      - name: Test code
+        run: npm run test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      js-filename: ${{ steps.publish.outputs.variable1 }}
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Build website
+        run: npm run build
+      - name: Publish JS filename
+        id: publish
+        run: find dist/assets/*.js -type f -execdir echo 'variable1={}' >> $GITHUB_OUTPUT ';'
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: dist
+          # path: |
+          #   dist
+          #   dist2/
+          #   package.json
+          #   package2.json
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: dist-files
+      - name: Current working directory
+        run: pwd
+      - name: List all files/folder
+        run: ls -a
+      - name: Output JS filename
+        run: echo "${{ needs.build.outputs.js-filename }}"
+      - name: Deploy
+        run: echo "Deploying..."

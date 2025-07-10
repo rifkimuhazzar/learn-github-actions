@@ -1,0 +1,40 @@
+name: Deploy Project
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get project code
+        uses: actions/checkout@v4
+      - name: Install nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install depedencies
+        run: npm ci
+      - name: Run test
+        run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get project code
+        uses: actions/checkout@v4
+      - name: Install nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install depedencies
+        run: npm ci
+      - name: Build project
+        run: npm run build
+      - name: Deploy
+        run: echo "Deploy..."

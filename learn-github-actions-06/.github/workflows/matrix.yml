@@ -1,0 +1,32 @@
+name: Matrix Demo
+
+on: push
+
+jobs:
+  build:
+    continue-on-error: true
+
+    strategy:
+      matrix:
+        versi-nodejs: [12, 14, 16]
+        sistem-operasi: [ubuntu-latest, windows-latest]
+        include:
+          - versi-nodejs: 22
+            sistem-operasi: ubuntu-latest
+        exclude:
+          - versi-nodejs: 12
+            sistem-operasi: windows-latest
+
+    runs-on: ${{ matrix.sistem-operasi }}
+
+    steps:
+      - name: Get code
+        uses: actions/checkout@v4
+      - name: Install nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.versi-nodejs }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Build project
+        run: npm run build

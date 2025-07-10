@@ -1,0 +1,35 @@
+name: Reusable Deploy Workflow
+
+on:
+  workflow_call:
+    inputs:
+      nama-artefak:
+        description: The name of the deployed artifact
+        required: false
+        default: dist
+        type: string
+    # secrets:
+    #   nama-rahasia:
+    #     required: false
+    outputs:
+      nama-hasil:
+        description: The result of the deployment operation
+        value: ${{ jobs.deploy.outputs.nama-hasil-deploy }}
+
+jobs:
+  deploy:
+    outputs:
+      nama-hasil-deploy: ${{ steps.set-result-output.outputs.result }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.nama-artefak }}
+      - name: List files
+        run: ls -la
+      - name: Output information
+        run: echo "Deploying and Updating..."
+      - name: Set result output
+        id: set-result-output
+        run: echo "result=success" >> $GITHUB_OUTPUT
